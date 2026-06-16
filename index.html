@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>董兒馥 作品集 | Erh Fu's Portfolio</title>
+
+    <!-- 引入 React 和 Tailwind -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap");
+      body {
+        font-family: "Noto Sans TC", sans-serif;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.8s ease-out forwards;
+      }
+    </style>
+  </head>
+  <body class="bg-white text-slate-900">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+
+      const Icons = {
+        Menu: () => (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="4" x2="20" y1="12" y2="12" />
+            <line x1="4" x2="20" y1="6" y2="6" />
+            <line x1="4" x2="20" y1="18" y2="18" />
+          </svg>
+        ),
+        X: () => (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12M6 18L18 6" />
+          </svg>
+        ),
+        ArrowDown: ({ className }) => (
+          <svg
+            className={className}
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 5v14" />
+            <path d="m19 12-7 7-7-7" />
+          </svg>
+        ),
+        Zap: () => (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+        ),
+        Lightbulb: () => (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+            <path d="M9 18h6" />
+            <path d="M10 22h4" />
+          </svg>
+        ),
+        Link: () => (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+        ),
+        Play: () => (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        ),
+      };
+
+      const COLORS = {
+        primary: "#FFB400",
+        secondary: "#FF6B6B",
+        tertiary: "#2A9D8F",
+        lineGreen: "#06C755",
+        cubeGrey: "#888888",
+        dark: "#2D3436",
+      };
+
+      const getYoutubeId = (url) => {
+        const regExp =
+          /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return match && match[2].length === 11 ? match[2] : null;
+      };
+
+      const ImageCarousel = ({ images }) => {
+        const [currentIndex, setCurrentIndex] = useState(0);
+        const [touchStart, setTouchStart] = useState(null);
+        const [touchEnd, setTouchEnd] = useState(null);
+
+        // Minimum swipe distance (in px)
+        const minSwipeDistance = 50;
+
+        useEffect(() => {
+          if (!images || images.length === 0) return;
+          const timer = setInterval(() => {
+            setCurrentIndex((p) => (p + 1) % images.length);
+          }, 4000);
+          return () => clearInterval(timer);
+        }, [images, currentIndex]); // Depend on currentIndex to reset timer on manual interaction
+
+        const onTouchStart = (e) => {
+          setTouchEnd(null); // Reset touch end
+          setTouchStart(e.targetTouches[0].clientX);
+        };
+
+        const onTouchMove = (e) => {
+          setTouchEnd(e.targetTouches[0].clientX);
+        };
+
+        const onTouchEnd = () => {
+          if (!touchStart || !touchEnd) return;
+          const distance = touchStart - touchEnd;
+          const isLeftSwipe = distance > minSwipeDistance;
+          const isRightSwipe = distance < -minSwipeDistance;
+
+          if (isLeftSwipe) {
+            // Swipe Left -> Next Image
+            setCurrentIndex((p) => (p + 1) % images.length);
+          }
+          if (isRightSwipe) {
+            // Swipe Right -> Previous Image
+            setCurrentIndex((p) => (p - 1 + images.length) % images.length);
+          }
+        };
+
+        if (!images || images.length === 0) return null;
+
+        return (
+          <div
+            className="absolute inset-0 w-full h-full bg-black touch-pan-y"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
+            {images.map((img, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                  index === currentIndex ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <img
+                  src={img}
+                  className="w-full h-full object-cover"
+                  alt="Slide"
+                />
+              </div>
+            ))}
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                    index === currentIndex
+                      ? "bg-white w-4"
+                      : "bg-white/40 hover:bg-white/70"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      };
+
+      const PortfolioItem = ({
+        title,
+        brand,
+        tag,
+        painPoint,
+        solution,
+        videoUrl,
+        images,
+        color,
+        index,
+        extraLink,
+        extraLinkText,
+        ctaText = "Watch Case Study",
+      }) => {
+        const [isInView, setIsInView] = useState(false);
+        const [isManualPlay, setIsManualPlay] = useState(false);
+        const sectionRef = useRef(null);
+        const youtubeId = getYoutubeId(videoUrl);
+        const isVideo = !!youtubeId;
+        const isReverse = index % 2 !== 0;
+
+        useEffect(() => {
+          const observer = new IntersectionObserver(
+            ([entry]) => {
+              if (entry.isIntersecting) {
+                setIsInView(true);
+              } else {
+                setIsInView(false);
+                setIsManualPlay(false);
+              }
+            },
+            { threshold: 0.3 }
+          );
+          if (sectionRef.current) observer.observe(sectionRef.current);
+          return () => observer.disconnect();
+        }, []);
+
+        const handlePlayClick = (e) => {
+          if (isVideo) {
+            e.preventDefault();
+            setIsManualPlay(true);
+          }
+        };
+
+        return (
+          <div
+            ref={sectionRef}
+            className={`min-h-screen w-full flex flex-col ${
+              isReverse ? "md:flex-row-reverse" : "md:flex-row"
+            } relative overflow-hidden bg-white border-b border-gray-100`}
+          >
+            {/* Visual Side - REVERTED to 50% (md:w-1/2) */}
+            <div className="w-full md:w-1/2 h-[50vh] md:h-screen flex items-center justify-center relative bg-slate-900 overflow-hidden">
+              {isVideo && isInView ? (
+                <div className="absolute inset-0 w-full h-full z-30 bg-black animate-fade-in">
+                  <iframe
+                    className="w-full h-full scale-[1.05]"
+                    src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${
+                      isManualPlay ? "0" : "1"
+                    }&controls=${
+                      isManualPlay ? "1" : "0"
+                    }&loop=1&playlist=${youtubeId}&rel=0&enablejsapi=1`}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              ) : (
+                <>
+                  {images && images.length > 0 ? (
+                    <ImageCarousel images={images} />
+                  ) : (
+                    <div
+                      className="absolute inset-0"
+                      style={{ backgroundColor: color }}
+                    >
+                      <div className="absolute top-1/4 right-10 w-24 h-24 rounded-full bg-white/20 blur-xl"></div>
+                      <div className="absolute bottom-1/4 left-10 w-32 h-32 rounded-full bg-black/10 blur-xl"></div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* RESTORED Overlay Position - Center */}
+              {!isManualPlay && (
+                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                  <div className="bg-black/40 p-6 rounded-xl backdrop-blur-md border border-white/10 shadow-2xl text-center max-w-xs w-full pointer-events-auto mx-4">
+                    <h3 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-white">
+                      {brand}
+                    </h3>
+                    <a
+                      href={videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={handlePlayClick}
+                      className="inline-flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest border border-white/30 bg-white/10 text-white hover:bg-white hover:text-black px-5 py-2.5 rounded-full transition-all duration-300"
+                    >
+                      {isVideo ? "Full Experience" : ctaText}{" "}
+                      {isVideo ? <Icons.Play /> : <Icons.Link />}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Subtle Project Index */}
+              <div
+                className={`absolute top-6 ${
+                  isReverse ? "right-6" : "left-6"
+                } text-white/20 text-4xl font-black select-none z-10`}
+              >
+                0{index + 1}
+              </div>
+            </div>
+
+            {/* Content Side - REVERTED to 50% (md:w-1/2) */}
+            <div className="w-full md:w-1/2 flex flex-col justify-center px-6 md:px-16 py-12 bg-white text-slate-800">
+              <div className="max-w-xl mx-auto md:mx-0">
+                <div className="mb-10">
+                  <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-widest uppercase mb-4 text-white bg-slate-800">
+                    Project Overview
+                  </span>
+                  {/* Changed tracking-tight to tracking-wider as requested */}
+                  <h2 className="text-3xl md:text-5xl font-black mb-2 leading-tight tracking-wider">
+                    {title}
+                  </h2>
+                  <p className="text-gray-500 text-sm italic mb-4 font-medium tracking-wide">
+                    {tag}
+                  </p>
+                  <div
+                    className="h-1 w-20 mt-4"
+                    style={{ backgroundColor: color }}
+                  ></div>
+                </div>
+
+                <div className="grid gap-8">
+                  <div>
+                    <div className="flex items-center mb-3">
+                      <div className="p-2 rounded-lg mr-4 bg-gray-100">
+                        <Icons.Zap />
+                      </div>
+                      <h4 className="text-xl font-bold">痛點</h4>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed pl-[60px] text-lg text-justify">
+                      {painPoint}
+                    </p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center mb-3">
+                      <div className="p-2 rounded-lg mr-4 bg-gray-100">
+                        <Icons.Lightbulb />
+                      </div>
+                      <h4 className="text-xl font-bold">解決方案</h4>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed pl-[60px] text-lg text-justify">
+                      {solution}
+                    </p>
+
+                    {extraLink && (
+                      <div className="pl-[60px] mt-6">
+                        <a
+                          href={extraLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-slate-900 text-slate-900 rounded-full font-bold text-xs hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                        >
+                          <Icons.Link /> {extraLinkText}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const App = () => {
+        const [activeCase, setActiveCase] = useState(0);
+        const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+        const cases = [
+          {
+            brand: "大安站台式居酒屋",
+            tag: "#小型餐酒館營運 #品牌定位 #團隊組織建立",
+            title: "感性策展與理性管理的商業平衡",
+            painPoint:
+              "在拓展二店的過程中，核心挑戰在於延續品牌價值卻販售完全不同的商品。需思考如何將台式庶民美學轉譯為可感知的餐飲空間，同時建立一套可被複製的標準化營運流程。",
+            solution:
+              "導入訂位與 POS 系統驅動數位轉型，有效減輕團隊負擔並維持人力穩定。在不妥協美感與感性體驗的前提下，統籌空間軟裝、酒款餐盤選品至文案內容。成功將感性策展轉化為月營收破兩百萬的商業績效。",
+            videoUrl: "https://maps.app.goo.gl/i3FGrpM32vkQM3Tj7",
+            color: COLORS.tertiary,
+            ctaText: "View Brand Location",
+            images: [
+              "https://upload.cc/i1/2026/02/11/54Bxod.jpg",
+              "https://upload.cc/i1/2026/02/11/QaPk9x.jpg",
+              "https://upload.cc/i1/2026/02/11/GgckJM.jpg",
+              "https://upload.cc/i1/2026/02/11/FUIZ1Y.jpg",
+              "https://upload.cc/i1/2026/02/11/qNkDTA.jpg",
+            ],
+          },
+          {
+            brand: "SUNMAI 金色三麥｜鐵粉英雄",
+            tag: "#內容行銷 #社群小編 #人設建立",
+            title: "小編人設維運與危機化解",
+            painPoint:
+              "疫情爆發初期，原定推廣的酒款品項名稱「賀」不符當時社會氛圍。且死忠鐵粉跑遍各大通路後落空，焦慮轉化為對品牌看得到喝不到的負面情緒。",
+            solution:
+              "打破制式客服框架，小編化身線上導航員，即時連線庫存為粉絲尋酒。將真實救援過程即時剪輯成影片，證明品牌在乎每一位粉絲的「渴」望，維持小編互動讓更多客人看見商品。",
+            videoUrl: "https://www.youtube.com/watch?v=RGihYGoqGO8",
+            extraLink:
+              "https://www.facebook.com/lebledor.brewhouse/videos/888178941699462/",
+            extraLinkText: "精彩小編互動原文",
+            color: COLORS.primary,
+          },
+          {
+            brand: "SUNMAI 金色三麥｜疫情下的陪伴",
+            tag: "#敏捷行銷 #分析數據 #時事造題",
+            title: "疫情間溫柔且鏗鏘有力的陪伴",
+            painPoint:
+              "2020 年疫情衝擊，啤酒最倚賴的歡聚場景消失。既定的拍攝計畫與素材變得不合時宜，品牌面臨失聲危機。",
+            solution:
+              "採取熱點行銷策略快速調整內容，推出戴口罩、視訊乾杯、保持距離等趣味素材，用幽默感同理消費者，持續在隔離生活中找到啤酒的立足點，在低迷氛圍中維持品牌溫度與心佔率。",
+            videoUrl: "https://www.youtube.com/watch?v=ndX6hAbyPK0",
+            color: COLORS.secondary,
+          },
+          {
+            brand: "LINE 禮物｜宅配禮",
+            tag: "#產品行銷 #新功能落地 #創意發想 #品牌定位",
+            title: "新功能上市強化社群定位",
+            painPoint:
+              "品牌發布的第二波主要大功能推出，因為送禮後讓收禮人自行填寫地址不符合大眾認知，如何將此新的使用習慣降低門檻並深入人心？",
+            solution:
+              "提出「即時禮，到心裡」的主張，透過誇張幽默的創意素材演繹多種送禮場景，透過重複和不同時間點的一再提及，強調再也沒有任何事能阻止送禮，成功在功能上市期建立強烈印象。",
+            videoUrl: "https://www.youtube.com/watch?v=BcQ7aJjy920",
+            color: COLORS.lineGreen,
+          },
+          {
+            brand: "上海瓶行宇宙｜為想要的世界買單",
+            tag: "#SDGs #整合策展",
+            title: "議題轉化的商業大型活動",
+            painPoint:
+              "當年永續生活指標剛開始在社群中推廣。聯合國架構下的資訊量過大且生硬，一般大眾難以產生共鳴，覺得與日常無關，如何轉化成輕鬆的內容讓大眾共感",
+            solution:
+              "打造限時烏托邦，融合各品牌的永續倡議，讓 B2C 與 B2B 的多樣可能在場域中發生。搭配線上傳播達成破億人次觸及，讓商業觀念用溫柔語彙進入市場。",
+            videoUrl: "https://www.bilibili.com/video/BV1nb411q7Ps/",
+            color: COLORS.cubeGrey,
+            images: [
+              "https://upload.cc/i1/2026/02/11/WE97yv.png",
+              "https://upload.cc/i1/2026/02/11/fFOdTt.png",
+              "https://upload.cc/i1/2026/02/11/ovISj8.png",
+            ],
+          },
+        ];
+
+        const scrollToCase = (i) => {
+          setActiveCase(i);
+          const el = document.getElementById(`case-${i}`);
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+          setIsMenuOpen(false);
+        };
+
+        return (
+          <div className="font-sans antialiased text-gray-900 bg-white">
+            <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center mix-blend-difference text-white">
+              <div
+                className="text-xl font-black tracking-tighter cursor-pointer"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
+                ERH FU.
+              </div>
+              <div className="hidden md:flex space-x-8 text-sm font-bold tracking-widest uppercase">
+                {cases.map((c, i) => (
+                  <button
+                    key={i}
+                    onClick={() => scrollToCase(i)}
+                    className={`hover:text-gray-300 transition-colors ${
+                      activeCase === i ? "border-b-2 border-white" : ""
+                    }`}
+                  >
+                    Case 0{i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                className="md:hidden text-white"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                <Icons.Menu />
+              </button>
+            </nav>
+
+            {isMenuOpen && (
+              <div className="fixed inset-0 bg-black z-40 flex flex-col items-center justify-center space-y-8 text-white">
+                {cases.map((c, i) => (
+                  <button
+                    key={i}
+                    onClick={() => scrollToCase(i)}
+                    className="text-3xl font-bold"
+                  >
+                    Case 0{i + 1}
+                  </button>
+                ))}
+                <button
+                  className="text-xl text-gray-500"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+            )}
+
+            {/* Adjusted Header Height to h-[60vh] and removed the paragraph */}
+            <header className="h-[60vh] w-full flex flex-col justify-center items-center relative bg-white px-6 overflow-hidden">
+              <div className="max-w-5xl z-10 text-center animate-fade-in">
+                <p className="text-xs md:text-sm font-bold tracking-[0.4em] uppercase mb-8 text-gray-400">
+                  Erh Fu's Portfolio
+                </p>
+                <h1 className="text-5xl md:text-8xl font-black mb-8 leading-tight tracking-tighter text-slate-900">
+                  董 兒 馥<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2A9D8F] via-[#E76F51] to-[#FFB400]">
+                    作品集
+                  </span>
+                </h1>
+
+                {/* Paragraph removed as requested */}
+
+                <button
+                  onClick={() => scrollToCase(0)}
+                  className="group flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-full font-bold hover:bg-slate-800 transition-all shadow-xl mx-auto"
+                >
+                  👀 查看案例
+                  <Icons.ArrowDown className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+                </button>
+              </div>
+              <div className="absolute top-0 right-0 w-1/2 h-full bg-gray-50 -z-0 skew-x-12 opacity-50 translate-x-1/3 pointer-events-none"></div>
+            </header>
+
+            <main>
+              {cases.map((item, index) => (
+                <section id={`case-${index}`} key={index}>
+                  <PortfolioItem {...item} index={index} />
+                </section>
+              ))}
+            </main>
+
+            <footer className="py-24 bg-slate-900 text-white text-center px-6">
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold mb-8">
+                  Do Goooooood ,Have Fuuuuuuuuuun
+                </h2>
+                <div className="flex flex-col md:flex-row justify-center gap-6">
+                  <a
+                    href="mailto:alice47272003@gmail.com"
+                    className="px-8 py-4 bg-white text-slate-900 rounded-full font-bold hover:bg-gray-200 transition-all shadow-xl"
+                  >
+                    Email Me
+                  </a>
+                </div>
+                <div className="mt-20 text-xs text-gray-600 tracking-widest uppercase">
+                  © 2026 Erh Fu Portfolio. Built with Logic & Creativity &
+                  Gemini.
+                </div>
+              </div>
+            </footer>
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
