@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>董兒馥 作品集 | Erh Fu's Portfolio</title>
 
+    <!-- 引入 React 和 Tailwind -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
@@ -181,7 +182,6 @@
         const [touchStart, setTouchStart] = useState(null);
         const [touchEnd, setTouchEnd] = useState(null);
 
-        // Minimum swipe distance (in px)
         const minSwipeDistance = 50;
 
         useEffect(() => {
@@ -190,10 +190,10 @@
             setCurrentIndex((p) => (p + 1) % images.length);
           }, 4000);
           return () => clearInterval(timer);
-        }, [images, currentIndex]); // Depend on currentIndex to reset timer on manual interaction
+        }, [images, currentIndex]);
 
         const onTouchStart = (e) => {
-          setTouchEnd(null); // Reset touch end
+          setTouchEnd(null);
           setTouchStart(e.targetTouches[0].clientX);
         };
 
@@ -208,11 +208,9 @@
           const isRightSwipe = distance < -minSwipeDistance;
 
           if (isLeftSwipe) {
-            // Swipe Left -> Next Image
             setCurrentIndex((p) => (p + 1) % images.length);
           }
           if (isRightSwipe) {
-            // Swipe Right -> Previous Image
             setCurrentIndex((p) => (p - 1 + images.length) % images.length);
           }
         };
@@ -260,6 +258,8 @@
       const PortfolioItem = ({
         title,
         brand,
+        company,
+        role,
         tag,
         painPoint,
         solution,
@@ -308,7 +308,6 @@
               isReverse ? "md:flex-row-reverse" : "md:flex-row"
             } relative overflow-hidden bg-white border-b border-gray-100`}
           >
-            {/* Visual Side - REVERTED to 50% (md:w-1/2) */}
             <div className="w-full md:w-1/2 h-[50vh] md:h-screen flex items-center justify-center relative bg-slate-900 overflow-hidden">
               {isVideo && isInView ? (
                 <div className="absolute inset-0 w-full h-full z-30 bg-black animate-fade-in">
@@ -340,7 +339,6 @@
                 </>
               )}
 
-              {/* RESTORED Overlay Position - Center */}
               {!isManualPlay && (
                 <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                   <div className="bg-black/40 p-6 rounded-xl backdrop-blur-md border border-white/10 shadow-2xl text-center max-w-xs w-full pointer-events-auto mx-4">
@@ -361,7 +359,6 @@
                 </div>
               )}
 
-              {/* Subtle Project Index */}
               <div
                 className={`absolute top-6 ${
                   isReverse ? "right-6" : "left-6"
@@ -371,17 +368,33 @@
               </div>
             </div>
 
-            {/* Content Side - REVERTED to 50% (md:w-1/2) */}
             <div className="w-full md:w-1/2 flex flex-col justify-center px-6 md:px-16 py-12 bg-white text-slate-800">
               <div className="max-w-xl mx-auto md:mx-0">
                 <div className="mb-10">
                   <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-widest uppercase mb-4 text-white bg-slate-800">
                     Project Overview
                   </span>
-                  {/* Changed tracking-tight to tracking-wider as requested */}
-                  <h2 className="text-3xl md:text-5xl font-black mb-2 leading-tight tracking-wider">
+                  
+                  <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight tracking-wider">
                     {title}
                   </h2>
+
+                  {/* 新增：公司與職位顯示區塊 */}
+                  {(company || role) && (
+                    <div className="flex flex-wrap items-center gap-3 mb-6">
+                      {company && (
+                        <div className="flex items-center text-sm font-bold text-slate-700 bg-slate-100 px-4 py-2 rounded-md border border-slate-200 shadow-sm">
+                          🏢 公司：{company}
+                        </div>
+                      )}
+                      {role && (
+                        <div className="flex items-center text-sm font-bold text-slate-700 bg-slate-100 px-4 py-2 rounded-md border border-slate-200 shadow-sm">
+                          💼 職位：{role}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <p className="text-gray-500 text-sm italic mb-4 font-medium tracking-wide">
                     {tag}
                   </p>
@@ -439,9 +452,12 @@
         const [activeCase, setActiveCase] = useState(0);
         const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+        // 新增：每個案例的 company 與 role 屬性，請自行替換文字內容
         const cases = [
           {
             brand: "大安站台式居酒屋",
+            company: "請填寫公司名稱",
+            role: "請填寫擔任職位",
             tag: "#小型餐酒館營運 #品牌定位 #團隊組織建立",
             title: "感性策展與理性管理的商業平衡",
             painPoint:
@@ -461,6 +477,8 @@
           },
           {
             brand: "SUNMAI 金色三麥｜鐵粉英雄",
+            company: "請填寫公司名稱",
+            role: "請填寫擔任職位",
             tag: "#內容行銷 #社群小編 #人設建立",
             title: "小編人設維運與危機化解",
             painPoint:
@@ -475,6 +493,8 @@
           },
           {
             brand: "SUNMAI 金色三麥｜疫情下的陪伴",
+            company: "請填寫公司名稱",
+            role: "請填寫擔任職位",
             tag: "#敏捷行銷 #分析數據 #時事造題",
             title: "疫情間溫柔且鏗鏘有力的陪伴",
             painPoint:
@@ -486,6 +506,8 @@
           },
           {
             brand: "LINE 禮物｜宅配禮",
+            company: "請填寫公司名稱",
+            role: "請填寫擔任職位",
             tag: "#產品行銷 #新功能落地 #創意發想 #品牌定位",
             title: "新功能上市強化社群定位",
             painPoint:
@@ -497,6 +519,8 @@
           },
           {
             brand: "上海瓶行宇宙｜為想要的世界買單",
+            company: "請填寫公司名稱",
+            role: "請填寫擔任職位",
             tag: "#SDGs #整合策展",
             title: "議題轉化的商業大型活動",
             painPoint:
@@ -570,7 +594,6 @@
               </div>
             )}
 
-            {/* Adjusted Header Height to h-[60vh] and removed the paragraph */}
             <header className="h-[60vh] w-full flex flex-col justify-center items-center relative bg-white px-6 overflow-hidden">
               <div className="max-w-5xl z-10 text-center animate-fade-in">
                 <p className="text-xs md:text-sm font-bold tracking-[0.4em] uppercase mb-8 text-gray-400">
@@ -582,8 +605,6 @@
                     作品集
                   </span>
                 </h1>
-
-                {/* Paragraph removed as requested */}
 
                 <button
                   onClick={() => scrollToCase(0)}
@@ -618,8 +639,7 @@
                   </a>
                 </div>
                 <div className="mt-20 text-xs text-gray-600 tracking-widest uppercase">
-                  © 2026 Erh Fu Portfolio. Built with Logic & Creativity &
-                  Gemini.
+                  © 2026 Erh Fu Portfolio. Built with Logic & Creativity & Gemini.
                 </div>
               </div>
             </footer>
